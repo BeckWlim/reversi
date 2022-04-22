@@ -73,16 +73,37 @@ class MainWindow(object):
                         indexY = int(y/50)
                         if(chessList.count((True, indexX, indexY))==0 and chessList.count((False, indexX, indexY))==0 and gameFlag):
                             chessList.append((chessFlag, indexX, indexY))
-                            chessList, count, self.convertList = chessEngine.convert((chessFlag, indexX, indexY), chessList, [])
+                            self.convertList = []
+                            count = chessEngine.convert((chessFlag, indexX, indexY), chessList, self.convertList)
                             # 无冲突 落子
                             # print(chessList)
+
+
                             if count > 0:
                                 if chessFlag:
                                     name = "Black"
                                 else:
                                     name = "White"
                                 terminal.insert(name + ": " + str((indexX, indexY)))
-                                chessFlag = not chessFlag
+                                count_blank = chessEngine.searchFiled(not chessFlag, chessList)
+                                print(count, count_blank)
+                                if count_blank > 0:
+                                    # 对手有可用路径
+                                    chessFlag = not chessFlag
+                                else:
+                                    if chessEngine.searchFiled(chessFlag, chessList) == 0:
+                                        # 两方都无可用路径 结束
+                                        blackCounter, whiteCounter = chessEngine.result(chessList)
+                                        terminal.insert("game over" + str((blackCounter, whiteCounter)))
+                                        if blackCounter > whiteCounter:
+                                            terminal.insert("black win")
+                                        elif blackCounter == whiteCounter:
+                                            terminal.insert("play even")
+                                        else:
+                                            terminal.insert("white win")
+                                        chessList.clear()
+                                        self.convertList = []
+                                        gameFlag = False
                             else:
                                 # 没有实现翻转 无效落子
                                 chessList.remove((chessFlag, indexX, indexY))
@@ -96,6 +117,7 @@ class MainWindow(object):
                 if event.type == 1:
                     terminal.insert("game reset")
                     chessList.clear()
+                    self.convertList = []
                     gameFlag = False
 
             x, y = pygame.mouse.get_pos()
