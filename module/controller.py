@@ -1,7 +1,7 @@
 from tkinter.ttk import Label
-
+import time
 import pygame
-from pygame import *
+from pygame import MOUSEBUTTONDOWN
 
 
 class Button(object):
@@ -41,6 +41,7 @@ class Button(object):
         self.isOver(point)
         self.render(self.surface)
 
+
 class Terminal(object):
     def __init__(self, id, rect, surface):
         self.id = id
@@ -60,4 +61,17 @@ class Terminal(object):
 
     def insert(self, msg):
         self.messageList.append(msg)
+
+class gameTimer(object):
+    def __init__(self):
+        self.timeStart = 0
+        self.timeEnd = 0
+        self.time = 0
+
+    def startTimer(self):
+        self.timeStart = round(time.time(), 3)
+
+    def endTimer(self):
+        self.timeEnd = round(time.time(), 3)
+        return round(self.timeEnd - self.timeStart, 3)
 
