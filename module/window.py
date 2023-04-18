@@ -11,11 +11,11 @@ import os
 import sys
 
 
-
 class MainWindow(object):
     SIGNAL_START = 0
     SIGNAL_RESET = 1
     SIGNAL_PAUSE = 2
+
     def __init__(self):
         pygame.init()
         # 初始化pygame,为使用硬件做准备
@@ -86,11 +86,14 @@ class MainWindow(object):
                     self.gameTimer.startTimer()
                     if self.chessEngine.player[self.chessEngine.chessFlag] == self.chessEngine.PLAYER_AI:
                         # 下一回合为AI
-                        self.terminal.messageList += self.chessEngine.dropChess(self.alpha.analyse(copy.deepcopy(self.chessEngine.chessList)))
-                        self.terminal.insert("AI time:" + str(self.gameTimer.endTimer()))
+                        position = self.alpha.analyse(copy.deepcopy(self.chessEngine.chessList))
+                        if position != None:
+                            self.terminal.messageList += self.chessEngine.dropChess(position)
+                            self.terminal.insert("AI time:" + str(self.gameTimer.endTimer()))
             self.screen.blit(self.background, (0, 0))
             self.gameDrawer()
             self.screen.blit(textTitle, (550, 50))
+            # 检测鼠标悬停事件
             for button in self.buttonList.values():
                 button.update(pygame.mouse.get_pos())
             self.terminal.update()

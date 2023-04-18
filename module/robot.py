@@ -3,8 +3,10 @@ import copy
 from module.engine import ChessEngine
 import math
 
+
 class miniAlphaGo(object):
     cParam = 2
+
     def __init__(self):
         self.chessFlag = False
         self.simuEngine = ChessEngine()
@@ -14,18 +16,20 @@ class miniAlphaGo(object):
     def setChessFlag(self, flag):
         self.chessFlag = flag
         self.simuEngine.chessFlag = flag
+
     def analyse(self, chessList):
         # 载入棋局
         self.chessList = copy.deepcopy(chessList)
         head = MCTSNode()
         head.chessFlag = self.chessFlag
         # self.simuEngine.setSandBoxParam(chessList, self.chessFlag)
-        for i in range(48):
+        for i in range(64):
             self.simuEngine.setSandBoxParam(copy.deepcopy(chessList), self.chessFlag)
             self.MCTSSearch(head.num, head)
         nextNode = None
         if len(head.childList) == 0:
             print("!!!!!!!!!!!")
+            return None
         for temp in head.childList:
             tempParam = temp.award/temp.num + self.cParam * math.sqrt(math.log(head.num)/temp.num)
             if nextNode == None:  # 尚未选取待选择节点
@@ -46,29 +50,32 @@ class miniAlphaGo(object):
         if node.award == None:  # 未扩展
             # 随机模拟
             if self.nodeExpand(node) == 0:
+                # 到达终局
                 result = self.simuEngine.result()
                 if result[0] > result[1]:
-                    simuAward = 2
+                    simuAward = 30
                 elif result[0] == result[1]:
                     simuAward = 0
                 else:
-                    simuAward = -2
-                if self.chessFlag:
+                    simuAward = -30
+                if self.chessFlag == True:
                     node.award = -simuAward
                 else:
                     node.award = simuAward
                 node.num += 1
                 node.result = True
-
+            # 沙盘模拟32步
             result = self.simuEngine.simulation(32)
+            # 检索棋局中的关键点
+            corner = self.searchCorner(self.simuEngine.chessList)
             if result[0] > result[1]:
-                simuAward = 1
+                simuAward = 4 + corner
             elif result[0] == result[1]:
-                simuAward = 0
+                simuAward = 0 + corner
             else:
-                simuAward = -1
+                simuAward = -4 + corner
 
-            if flag:
+            if flag == True:
                 node.award = -simuAward
             else:
                 node.award = simuAward
@@ -108,11 +115,7 @@ class miniAlphaGo(object):
             temp = MCTSNode()
             temp.chess = chess
             node.addChild(temp)
-
-
         return len(chessPool)
-
-
 
     def searchBlank(self, chessList, chessFlag):
         searchPool = []
@@ -143,6 +146,30 @@ class miniAlphaGo(object):
                             dropPool.append((chess[1] + i * searchVector[index][0], chess[2] + i * searchVector[index][1]))
         return dropPool
 
+    def searchCorner(self, chessList):
+        count = 0
+        for chess in chessList:
+            if chess[0] == True:
+                if chess[1] == 0 and chess[2] == 0:
+                    count += 1
+                if chess[1] == 7 and chess[2] == 7:
+                    count += 1
+                if chess[1] == 0 and chess[2] == 7:
+                    count += 1
+                if chess[1] == 7 and chess[2] == 0:
+                    count += 1
+            if chess[0] == False:
+                if chess[1] == 0 and chess[2] == 0:
+                    count -= 1
+                if chess[1] == 7 and chess[2] == 7:
+                    count -= 1
+                if chess[1] == 0 and chess[2] == 7:
+                    count -= 1
+                if chess[1] == 7 and chess[2] == 0:
+                    count -= 1
+        return count
+
+
 class MCTSNode(object):
     def __init__(self):
         self.childList = []
@@ -161,6 +188,7 @@ class MCTSNode(object):
 
     def setAward(self, award):
         self.award = award
+
 
 if __name__ == "__main__":
     for i in range(10):

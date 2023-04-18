@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(
-    ['bin\\main.py',
+    ['main.py',
     'module\\controller.py',
     'module\\engine.py',
     'module\\robot.py',
